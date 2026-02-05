@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مجتمع المهندسين | Engineering Hub</title>
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --chat-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --my-msg-bg: #2563eb;
+            --other-msg-bg: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            background: #064e3b;
+            color: #34d399;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px; background: #34d399; border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* --- Chat Area --- */
+        #chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 1px, transparent 1px);
+            background-size: 30px 30px; /* Pattern */
+        }
+
+        .msg-wrapper {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+            animation: slideIn 0.3s ease;
+        }
+
+        .msg-wrapper.me {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #475569;
+            border: 2px solid var(--primary);
+            flex-shrink: 0;
+        }
+
+        .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            line-height: 1.5;
+        }
+
+        .other .msg-bubble {
+            background: var(--other-msg-bg);
+            border-top-right-radius: 4px;
+        }
+
+        .me .msg-bubble {
+            background: var(--my-msg-bg);
+            color: white;
+            border-top-left-radius: 4px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .user-meta {
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .me .user-meta { color: #bfdbfe; flex-direction: row-reverse; }
+
+        .timestamp { font-size: 0.65rem; opacity: 0.7; margin-top: 5px; display: block; text-align: left; }
+        .me .timestamp { text-align: right; }
+
+        /* --- Input Area --- */
+        .input-area {
+            background: var(--chat-bg);
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-top: 1px solid #334155;
+        }
+
+        input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 14px;
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        button.send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button.send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        button.send-btn:active { transform: translateY(0); }
+
+        /* --- Login Modal --- */
+        #login-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--chat-bg);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #334155;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .modal-content h2 { margin-top: 0; color: var(--primary); }
+
+        /* --- Animations --- */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .msg-wrapper { max-width: 95%; }
+            .header { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-modal">
+        <div class="modal-content">
+            <h2>🚀 هوية المهندس</h2>
+            <p style="color: #94a3b8; margin-bottom: 20px;">من فضلك أدخل اسمك للانضمام للغرفة</p>
+            <input type="text" id="username-input" placeholder="اسمك الكريم..." style="width: 100%; margin-bottom: 15px;">
+            <button class="send-btn" style="width: 100%; justify-content: center;" onclick="saveNameAndStart()">انضمام</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="brand">
+            <span>📡</span>
+            <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                <span>رادار المهندسين</span>
+                <span style="font-size: 0.7rem; color: #94a3b8; font-weight: normal;">Global Engineering Room</span>
+            </div>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span id="online-users">1 متصل</span>
+        </div>
+    </header>
+
+    <div id="chat-container">
+        </div>
+
+    <div class="input-area">
+        <input type="text" id="msg-input" placeholder="اكتب رسالتك الهندسية..." autocomplete="off">
+        <button class="send-btn" onclick="sendMessage()">
+            إرسال ✈️
+        </button>
+    </div>
+
+    <audio id="notify-sound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+
+    <script>
+        // === التكوين وإعداد المتغيرات ===
+        // ⚠️ ملاحظة: مفاتيح Demo مشتركة عالمياً. لمشروع حقيقي، سجل في PubNub واحصل على مفاتيحك الخاصة مجاناً.
+        const PUBNUB_KEYS = {
+            publishKey: 'demo',
+            subscribeKey: 'demo',
+            uuid: PubNub.generateUUID() // معرف فريد للجلسة الحالية
+        };
+        const CHANNEL_NAME = 'engineering_hub_v2'; // قناة جديدة لتجنب التداخل
+
+        let pubnub;
+        let currentUser = localStorage.getItem('eng_username'); // استرجاع الاسم المحفوظ
+        let userAvatar = '';
+
+        // === دالة البدء (Initialization) ===
+        function initApp() {
+            if (currentUser) {
+                document.getElementById('login-modal').style.display = 'none';
+                setupPubNub();
+                generateAvatar(currentUser);
+            } else {
+                // الانتظار حتى يدخل المستخدم اسمه في الـ Modal
+            }
+        }
+
+        // === 1. إدارة المستخدم والاسم ===
+        function saveNameAndStart() {
+            const nameInput = document.getElementById('username-input');
+            const name = nameInput.value.trim();
+            if (name.length < 2) return alert("الاسم قصير جداً!");
+
+            currentUser = name;
+            localStorage.setItem('eng_username', currentUser); // الحفظ الدائم
+            document.getElementById('login-modal').style.display = 'none';
+            setupPubNub();
+            generateAvatar(currentUser);
+        }
+
+        function generateAvatar(name) {
+            // استخدام خدمة DiceBear المجانية لتوليد صور رمزية بناءً على الاسم
+            userAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`;
+        }
+
+        // === 2. إعداد PubNub ===
+        function setupPubNub() {
+            pubnub = new PubNub({
+                publishKey: PUBNUB_KEYS.publishKey,
+                subscribeKey: PUBNUB_KEYS.subscribeKey,
+                userId: currentUser // ربط الاتصال باسم المستخدم
+            });
+
+            // الاشتراك في القناة
+            pubnub.subscribe({
+                channels: [CHANNEL_NAME],
+                withPresence: true // تفعيل ميزة معرفة المتصلين
+            });
+
+            // الاستماع للأحداث
+            pubnub.addListener({
+                message: (event) => {
+                    displayMessage(event.message, event.publisher === currentUser);
+                },
+                presence: (event) => {
+                    updateOnlineCount(event);
+                }
+            });
+
+            // تحميل آخر 10 رسائل (History)
+            fetchHistory();
+        }
+
+        // === 3. الوظائف الأساسية ===
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const messagePayload = {
+                text: text,
+                sender: currentUser,
+                avatar: userAvatar,
+                time: new Date().toISOString()
+            };
+
+            pubnub.publish({
+                channel: CHANNEL_NAME,
+                message: messagePayload
+            });
+
+            input.value = '';
+            input.focus();
+        }
+
+        // تشغيل زر Enter
+        document.getElementById('msg-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // === 4. العرض (UI Rendering) ===
+        function displayMessage(msgData, isMe) {
+            const chatBox = document.getElementById('chat-container');
+            
+            // تحويل الوقت لصيغة مقروءة
+            const dateObj = msgData.time ? new Date(msgData.time) : new Date();
+            const timeStr = dateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+            const div = document.createElement('div');
+            div.className = `msg-wrapper ${isMe ? 'me' : 'other'}`;
+            
+            // محتوى الرسالة HTML
+            div.innerHTML = `
+                <img src="${msgData.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest'}" class="avatar" alt="avatar">
+                <div class="msg-bubble">
+                    <div class="user-meta">
+                        <span>${msgData.sender}</span>
+                    </div>
+                    ${escapeHtml(msgData.text)}
+                    <span class="timestamp">${timeStr}</span>
+                </div>
+            `;
+
+            chatBox.appendChild(div);
+            
+            // النزول لأسفل الشات تلقائياً
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+
+            // تشغيل صوت إذا كانت الرسالة من شخص آخر
+            if (!isMe) {
+                const sound = document.getElementById('notify-sound');
+                sound.volume = 0.5;
+                sound.play().catch(e => console.log("Audio play prevented by browser policy"));
+            }
+        }
+
+        async function fetchHistory() {
+            try {
+                const result = await pubnub.fetchMessages({
+                    channels: [CHANNEL_NAME],
+                    count: 10 // عدد الرسائل القديمة
+                });
+                
+                if (result.channels[CHANNEL_NAME]) {
+                    result.channels[CHANNEL_NAME].forEach((msg) => {
+                        // عرض الرسائل القديمة دون تشغيل الصوت
+                        displayMessage(msg.message, msg.message.sender === currentUser);
+                    });
+                }
+            } catch (status) {
+                console.log("فشل تحميل الرسائل القديمة:", status);
+            }
+        }
+
+        function updateOnlineCount(presenceEvent) {
+            // ملاحظة: ميزة العد الدقيق تتطلب إعدادات في لوحة تحكم PubNub
+            // هنا سنعرض رقم تقريبي بناءً على التفاعل
+            const badge = document.getElementById('online-users');
+            if(presenceEvent.action === 'join' || presenceEvent.action === 'state-change') {
+                badge.innerText = `متصل: ${presenceEvent.occupancy} مهندس`;
+            }
+        }
+
+        // حماية من كود HTML الخبيث (XSS)
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // بدء التطبيق
+        initApp();
+
+    </script>
+</body>
+</html>
