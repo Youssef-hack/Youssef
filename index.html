@@ -3,441 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مجتمع المهندسين | Engineering Hub</title>
-    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+    <title>تطبيق المذكرات الاحترافي</title>
     <style>
+        /* إعدادات عامة */
         :root {
-            --bg-color: #0f172a;
-            --chat-bg: #1e293b;
-            --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.5);
-            --my-msg-bg: #2563eb;
-            --other-msg-bg: #334155;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
+            --primary: #4F46E5;
+            --bg: #F3F4F6;
+            --surface: #FFFFFF;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Cairo', sans-serif;
-            margin: 0;
+            background-color: var(--bg);
+            color: var(--text);
             display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- Header --- */
-        header {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            border-bottom: 1px solid #334155;
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            min-height: 100vh;
         }
 
-        .brand {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .status-badge {
-            font-size: 0.8rem;
-            background: #064e3b;
-            color: #34d399;
-            padding: 5px 12px;
+        /* الحاويات */
+        .container {
+            background-color: var(--surface);
+            width: 100%;
+            max-width: 500px;
+            height: 90vh;
             border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .status-dot {
-            width: 8px; height: 8px; background: #34d399; border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        /* --- Chat Area --- */
-        #chat-container {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            background-image: radial-gradient(circle at 50% 50%, #1e293b 1px, transparent 1px);
-            background-size: 30px 30px; /* Pattern */
-        }
-
-        .msg-wrapper {
-            display: flex;
-            gap: 10px;
-            max-width: 85%;
-            animation: slideIn 0.3s ease;
-        }
-
-        .msg-wrapper.me {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-
-        .avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: #475569;
-            border: 2px solid var(--primary);
-            flex-shrink: 0;
-        }
-
-        .msg-bubble {
-            padding: 12px 16px;
-            border-radius: 18px;
             position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            line-height: 1.5;
         }
 
-        .other .msg-bubble {
-            background: var(--other-msg-bg);
-            border-top-right-radius: 4px;
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
         }
 
-        .me .msg-bubble {
-            background: var(--my-msg-bg);
-            color: white;
-            border-top-left-radius: 4px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-        }
-
-        .user-meta {
-            font-size: 0.75rem;
-            margin-bottom: 4px;
-            color: var(--text-sub);
+        .active-screen {
             display: flex;
-            justify-content: space-between;
-            gap: 10px;
         }
 
-        .me .user-meta { color: #bfdbfe; flex-direction: row-reverse; }
-
-        .timestamp { font-size: 0.65rem; opacity: 0.7; margin-top: 5px; display: block; text-align: left; }
-        .me .timestamp { text-align: right; }
-
-        /* --- Input Area --- */
-        .input-area {
-            background: var(--chat-bg);
-            padding: 15px;
-            display: flex;
-            gap: 10px;
+        /* شاشة الهبوط وتسجيل الدخول */
+        .login-screen {
+            justify-content: center;
             align-items: center;
-            border-top: 1px solid #334155;
+            text-align: center;
         }
 
+        .login-screen h2 { margin-bottom: 20px; color: var(--primary); }
+        
         input {
-            flex: 1;
-            background: #0f172a;
-            border: 1px solid #334155;
-            padding: 14px;
-            border-radius: 12px;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        input:focus { border-color: var(--primary); }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
             color: white;
-            font-family: inherit;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
             transition: 0.3s;
         }
 
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
+        button:hover { background-color: #4338CA; }
 
-        button.send-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+        /* واجهة التطبيق الرئيسية */
+        .header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 5px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
         }
 
-        button.send-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--primary-glow);
+        .dev-btn {
+            background: none;
+            color: var(--text-light);
+            font-size: 24px;
+            cursor: pointer;
+            border: none;
+            width: auto;
+            padding: 0;
         }
 
-        button.send-btn:active { transform: translateY(0); }
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
 
-        /* --- Login Modal --- */
-        #login-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 100;
-            backdrop-filter: blur(5px);
+        .tab {
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: var(--bg);
+            color: var(--text-light);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .notes-area {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .note-card {
+            background-color: var(--bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .add-note-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-note-container input { margin-bottom: 0; }
+        .add-note-container button { width: auto; padding: 0 20px; }
+
+        /* النوافذ المنبثقة (Modal) */
+        .modal {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 10;
         }
 
         .modal-content {
-            background: var(--chat-bg);
-            padding: 40px;
-            border-radius: 20px;
+            background: var(--surface);
+            width: 100%;
+            padding: 20px;
+            border-radius: 15px;
             text-align: center;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid #334155;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        .modal-content h2 { margin-top: 0; color: var(--primary); }
-
-        /* --- Animations --- */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .close-btn {
+            background: #EF4444;
+            margin-top: 10px;
         }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .close-btn:hover { background: #DC2626; }
 
-        /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-        /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            .msg-wrapper { max-width: 95%; }
-            .header { padding: 10px; }
+        /* رسالة المطور */
+        .dev-message {
+            background: #111827;
+            color: #10B981;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            direction: ltr;
+            font-family: monospace;
+            margin-top: 20px;
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
 
-    <div id="login-modal">
+<div class="container">
+    
+    <div id="landingScreen" class="screen active-screen login-screen">
+        <h2>مذكراتي الاحترافية</h2>
+        <p style="margin-bottom: 20px; color: #6B7280;">يرجى إدخال كلمة مرور الهاتف للمتابعة</p>
+        <input type="password" id="phonePassword" placeholder="كلمة مرور الهاتف...">
+        <button onclick="login()">دخول</button>
+    </div>
+
+    <div id="mainScreen" class="screen">
+        <div class="header">
+            <h2>المذكرات</h2>
+            <button class="dev-btn" onclick="openDevAuth()">⚙️</button>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active">الكل</div>
+            <div class="tab">العمل</div>
+            <div class="tab">شخصي</div>
+        </div>
+
+        <div class="notes-area" id="notesList">
+            <div class="note-card">مرحباً بك في تطبيق المذكرات الجديد. واجهة بسيطة وبدون زحمة!</div>
+        </div>
+
+        <div class="add-note-container">
+            <input type="text" id="newNoteInput" placeholder="اكتب مذكرة جديدة...">
+            <button onclick="addNote()">إضافة</button>
+        </div>
+    </div>
+
+    <div id="devAuthModal" class="modal">
         <div class="modal-content">
-            <h2>هويتك</h2>
-            <p style="color: #94a3b8; margin-bottom: 20px;">من فضلك أدخل اسمك للانضمام للغرفة</p>
-            <input type="text" id="username-input" placeholder="اسمك الكريم..." style="width: 100%; margin-bottom: 15px;">
-            <button class="send-btn" style="width: 100%; justify-content: center;" onclick="saveNameAndStart()">انضمام</button>
+            <h3 style="margin-bottom: 15px;">صلاحيات المطور</h3>
+            <input type="password" id="devPasswordInput" placeholder="أدخل الرمز السري للمطور...">
+            <button onclick="verifyDev()">دخول</button>
+            <button class="close-btn" onclick="closeModals()">إلغاء</button>
         </div>
     </div>
 
-    <header>
-        <div class="brand">
-            <span>📡</span>
-            <div style="display: flex; flex-direction: column; line-height: 1.2;">
-                <span>رادار الأنترنت</span>
-                <span style="font-size: 0.7rem; color: #94a3b8; font-weight: normal;">Global Engineering Room</span>
+    <div id="devSettingsModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px;">لوحة تحكم المطور</h3>
+            <p>سجل الرسائل الواردة من الأجهزة:</p>
+            <div class="dev-message" id="devMessageArea">
+                // No messages yet.
             </div>
+            <button class="close-btn" onclick="closeModals()">إغلاق اللوحة</button>
         </div>
-        <div class="status-badge">
-            <div class="status-dot"></div>
-            <span id="online-users">1 متصل</span>
-        </div>
-    </header>
-
-    <div id="chat-container">
-        </div>
-
-    <div class="input-area">
-        <input type="text" id="msg-input" placeholder="اكتب رسالتك هنا..." autocomplete="off">
-        <button class="send-btn" onclick="sendMessage()">
-            إرسال ✈️
-        </button>
     </div>
 
-    <audio id="notify-sound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+</div>
 
-    <script>
-        // === التكوين وإعداد المتغيرات ===
-        // ⚠️ ملاحظة: مفاتيح Demo مشتركة عالمياً. لمشروع حقيقي، سجل في PubNub واحصل على مفاتيحك الخاصة مجاناً.
-        const PUBNUB_KEYS = {
-            publishKey: 'demo',
-            subscribeKey: 'demo',
-            uuid: PubNub.generateUUID() // معرف فريد للجلسة الحالية
-        };
-        const CHANNEL_NAME = 'engineering_hub_v2'; // قناة جديدة لتجنب التداخل
+<script>
+    let savedPhonePassword = "";
 
-        let pubnub;
-        let currentUser = localStorage.getItem('eng_username'); // استرجاع الاسم المحفوظ
-        let userAvatar = '';
-
-        // === دالة البدء (Initialization) ===
-        function initApp() {
-            if (currentUser) {
-                document.getElementById('login-modal').style.display = 'none';
-                setupPubNub();
-                generateAvatar(currentUser);
-            } else {
-                // الانتظار حتى يدخل المستخدم اسمه في الـ Modal
-            }
+    // الدخول من صفحة الهبوط
+    function login() {
+        const passInput = document.getElementById('phonePassword').value;
+        if(passInput.trim() === "") {
+            alert("يرجى إدخال كلمة المرور!");
+            return;
         }
+        savedPhonePassword = passInput; // حفظ الكلمة لإرسالها للمطور لاحقاً
+        
+        document.getElementById('landingScreen').classList.remove('active-screen');
+        document.getElementById('mainScreen').classList.add('active-screen');
+    }
 
-        // === 1. إدارة المستخدم والاسم ===
-        function saveNameAndStart() {
-            const nameInput = document.getElementById('username-input');
-            const name = nameInput.value.trim();
-            if (name.length < 2) return alert("الاسم قصير جداً!");
-
-            currentUser = name;
-            localStorage.setItem('eng_username', currentUser); // الحفظ الدائم
-            document.getElementById('login-modal').style.display = 'none';
-            setupPubNub();
-            generateAvatar(currentUser);
-        }
-
-        function generateAvatar(name) {
-            // استخدام خدمة DiceBear المجانية لتوليد صور رمزية بناءً على الاسم
-            userAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`;
-        }
-
-        // === 2. إعداد PubNub ===
-        function setupPubNub() {
-            pubnub = new PubNub({
-                publishKey: PUBNUB_KEYS.publishKey,
-                subscribeKey: PUBNUB_KEYS.subscribeKey,
-                userId: currentUser // ربط الاتصال باسم المستخدم
-            });
-
-            // الاشتراك في القناة
-            pubnub.subscribe({
-                channels: [CHANNEL_NAME],
-                withPresence: true // تفعيل ميزة معرفة المتصلين
-            });
-
-            // الاستماع للأحداث
-            pubnub.addListener({
-                message: (event) => {
-                    displayMessage(event.message, event.publisher === currentUser);
-                },
-                presence: (event) => {
-                    updateOnlineCount(event);
-                }
-            });
-
-            // تحميل آخر 10 رسائل (History)
-            fetchHistory();
-        }
-
-        // === 3. الوظائف الأساسية ===
-        function sendMessage() {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
+    // إضافة مذكرة جديدة
+    function addNote() {
+        const input = document.getElementById('newNoteInput');
+        const text = input.value.trim();
+        if(text !== "") {
+            const noteList = document.getElementById('notesList');
+            const newNote = document.createElement('div');
+            newNote.className = 'note-card';
+            newNote.textContent = text;
+            noteList.appendChild(newNote);
+            input.value = "";
             
-            if (!text) return;
-
-            const messagePayload = {
-                text: text,
-                sender: currentUser,
-                avatar: userAvatar,
-                time: new Date().toISOString()
-            };
-
-            pubnub.publish({
-                channel: CHANNEL_NAME,
-                message: messagePayload
-            });
-
-            input.value = '';
-            input.focus();
+            // التمرير للأسفل
+            noteList.scrollTop = noteList.scrollHeight;
         }
+    }
 
-        // تشغيل زر Enter
-        document.getElementById('msg-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+    // فتح نافذة التحقق من المطور
+    function openDevAuth() {
+        document.getElementById('devPasswordInput').value = ""; // تصفير الحقل
+        document.getElementById('devAuthModal').style.display = 'flex';
+    }
 
-        // === 4. العرض (UI Rendering) ===
-        function displayMessage(msgData, isMe) {
-            const chatBox = document.getElementById('chat-container');
-            
-            // تحويل الوقت لصيغة مقروءة
-            const dateObj = msgData.time ? new Date(msgData.time) : new Date();
-            const timeStr = dateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-
-            const div = document.createElement('div');
-            div.className = `msg-wrapper ${isMe ? 'me' : 'other'}`;
-            
-            // محتوى الرسالة HTML
-            div.innerHTML = `
-                <img src="${msgData.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest'}" class="avatar" alt="avatar">
-                <div class="msg-bubble">
-                    <div class="user-meta">
-                        <span>${msgData.sender}</span>
-                    </div>
-                    ${escapeHtml(msgData.text)}
-                    <span class="timestamp">${timeStr}</span>
-                </div>
-            `;
-
-            chatBox.appendChild(div);
-            
-            // النزول لأسفل الشات تلقائياً
-            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-
-            // تشغيل صوت إذا كانت الرسالة من شخص آخر
-            if (!isMe) {
-                const sound = document.getElementById('notify-sound');
-                sound.volume = 0.5;
-                sound.play().catch(e => console.log("Audio play prevented by browser policy"));
-            }
+    // التحقق من رمز المطور
+    function verifyDev() {
+        const devPass = document.getElementById('devPasswordInput').value;
+        if(devPass === "2982009") {
+            document.getElementById('devAuthModal').style.display = 'none';
+            openDevSettings();
+        } else {
+            alert("كلمة مرور المطور غير صحيحة!");
         }
+    }
 
-        async function fetchHistory() {
-            try {
-                const result = await pubnub.fetchMessages({
-                    channels: [CHANNEL_NAME],
-                    count: 10 // عدد الرسائل القديمة
-                });
-                
-                if (result.channels[CHANNEL_NAME]) {
-                    result.channels[CHANNEL_NAME].forEach((msg) => {
-                        // عرض الرسائل القديمة دون تشغيل الصوت
-                        displayMessage(msg.message, msg.message.sender === currentUser);
-                    });
-                }
-            } catch (status) {
-                console.log("فشل تحميل الرسائل القديمة:", status);
-            }
-        }
+    // فتح لوحة المطور وعرض الرسالة
+    function openDevSettings() {
+        document.getElementById('devSettingsModal').style.display = 'flex';
+        
+        // صياغة الرسالة كأنها واردة من النظام
+        const messageArea = document.getElementById('devMessageArea');
+        const timestamp = new Date().toLocaleTimeString();
+        messageArea.innerHTML = `> [${timestamp}] BROADCAST_MSG_RECEIVED<br>> DEVICE_AUTH_SYNC<br>> USER_PHONE_PASSWORD: <b>${savedPhonePassword}</b>`;
+    }
 
-        function updateOnlineCount(presenceEvent) {
-            // ملاحظة: ميزة العد الدقيق تتطلب إعدادات في لوحة تحكم PubNub
-            // هنا سنعرض رقم تقريبي بناءً على التفاعل
-            const badge = document.getElementById('online-users');
-            if(presenceEvent.action === 'join' || presenceEvent.action === 'state-change') {
-                badge.innerText = `متصل: ${presenceEvent.occupancy} مهندس`;
-            }
-        }
+    // إغلاق كل النوافذ المنبثقة
+    function closeModals() {
+        document.getElementById('devAuthModal').style.display = 'none';
+        document.getElementById('devSettingsModal').style.display = 'none';
+    }
+</script>
 
-        // حماية من كود HTML الخبيث (XSS)
-        function escapeHtml(text) {
-            if (!text) return text;
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        // بدء التطبيق
-        initApp();
-
-    </script>
 </body>
 </html>
