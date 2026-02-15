@@ -186,9 +186,11 @@
     }
 
     function acceptError() {
-        isFirstAttempt = false;
-        closeModals();
-    }
+    isFirstAttempt = false;
+    // السطر الجديد لتفريغ الحقل بعد الخطأ الأول
+    document.getElementById('phonePass').value = ""; 
+    closeModals();
+}
 
     function showExplanation() {
         document.getElementById('alertTitle').innerText = "شرح بسيط ✨";
