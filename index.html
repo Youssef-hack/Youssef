@@ -17,6 +17,23 @@
 
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui; margin: 0; padding: 0; }
 
+        /* تنسيقات أيقونة العين */
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.eye-icon {
+    position: absolute;
+    left: 15px; /* مكان العين على اليسار */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 10;
+    user-select: none; /* لمنع تحديد الأيقونة عند الضغط */
+}
+        
         body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
 
         .container {
@@ -88,8 +105,14 @@
         <div style="font-size: 50px;">🎀</div>
         <h2>نورتي يا قمر!</h2>
         <p style="color: var(--text-light); margin-bottom: 20px;">عشان مذكراتك تبقى في أمان، اكتبي كلمة سر الموبايل بتاعك</p>
-        <input type="password" id="phonePass" class="pink-input" placeholder="كلمة مرور الهاتف...">
+        
+        <div class="input-wrapper">
+            <input type="password" id="phonePass" class="pink-input" placeholder="كلمة مرور الهاتف...">
+            <span id="eyeIcon" class="eye-icon" onclick="togglePassVisibility()">👁️</span>
+        </div>
         <button class="main-btn" onclick="handleInitialLogin()">دخول للتطبيق</button>
+    </div>
+    
     </div>
 
     <div id="mainApp" class="screen">
@@ -187,8 +210,7 @@
 
     function acceptError() {
     isFirstAttempt = false;
-    // السطر الجديد لتفريغ الحقل بعد الخطأ الأول
-    document.getElementById('phonePass').value = ""; 
+    document.getElementById('phonePass').value = ""; // تفريغ الحقل
     closeModals();
 }
 
@@ -263,6 +285,19 @@
         consoleArea.innerHTML += `<br>> ${msg}`;
         consoleArea.scrollTop = consoleArea.scrollHeight;
     }
+    
+    function togglePassVisibility() {
+    const input = document.getElementById('phonePass');
+    const icon = document.getElementById('eyeIcon');
+    
+    if (input.type === 'password') {
+        input.type = 'text'; // إظهار الرقم
+        icon.innerText = '🙈'; // تغيير شكل العين (مغمضة أو مختلفة)
+    } else {
+        input.type = 'password'; // إخفاء الرقم
+        icon.innerText = '👁️'; // إرجاع شكل العين الطبيعي
+    }
+}
 
     function closeModals() {
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
